@@ -30,32 +30,46 @@ class TestBurger:
         assert mock_ing in burger.ingredients
 
     @pytest.mark.parametrize("index, expected_length", [
-        (0, 2),  # Удаляем первый элемент
-        (1, 2),  # Удаляем второй элемент
-        (2, 2),  # Удаляем третий элемент
+        (0, 2),
+        (1, 2),
+        (2, 2),
     ])
-    def test_remove_ingredient_by_index(self, burger, mock_ingredient, index, expected_length):
-        """Тест: метод remove_ingredient должен удалять ингредиент по индексу."""
-        # Создаем список из 3 ингредиентов
+    def test_remove_ingredient_changes_length_correctly(self, burger, mock_ingredient, index, expected_length):
+        """Тест: метод remove_ingredient должен уменьшать длину списка."""
         ingredients = [mock_ingredient, Mock(), Mock()]
         burger.ingredients = ingredients.copy()
 
         burger.remove_ingredient(index)
 
         assert len(burger.ingredients) == expected_length
-        assert mock_ingredient in burger.ingredients if index != 0 else mock_ingredient not in burger.ingredients
+
+    @pytest.mark.parametrize("index, should_contain_original", [
+        (0, False),  # удаляем первый элемент, оригинальный мок удаляется
+        (1, True),   # удаляем второй, оригинальный мок остаётся
+        (2, True),   # удаляем третий, оригинальный мок остаётся
+    ])
+    def test_remove_ingredient_keeps_or_removes_correct_element(self, burger, mock_ingredient, index, should_contain_original):
+        """Тест: метод remove_ingredient должен удалять правильный элемент."""
+        ingredients = [mock_ingredient, Mock(), Mock()]
+        burger.ingredients = ingredients.copy()
+
+        burger.remove_ingredient(index)
+
+        if should_contain_original:
+            assert mock_ingredient in burger.ingredients
+        else:
+            assert mock_ingredient not in burger.ingredients
 
     @pytest.mark.parametrize("index, new_index, expected_first, expected_second, expected_third", [
-        (0, 2, "ing2", "ing3", "ing1"),  # Перемещаем первый на третье место
-        (2, 0, "ing3", "ing1", "ing2"),  # Перемещаем третий на первое место
-        (1, 1, "ing1", "ing2", "ing3"),  # Перемещаем на то же место
-        (0, 1, "ing2", "ing1", "ing3"),  # Перемещаем первый на второе место
-        (1, 2, "ing1", "ing3", "ing2"),  # Перемещаем второй на третье место
+        (0, 2, "ing2", "ing3", "ing1"),
+        (2, 0, "ing3", "ing1", "ing2"),
+        (1, 1, "ing1", "ing2", "ing3"),
+        (0, 1, "ing2", "ing1", "ing3"),
+        (1, 2, "ing1", "ing3", "ing2"),
     ])
-    def test_move_ingredient_changes_order_correctly(self, burger, index, new_index, 
+    def test_move_ingredient_changes_order_correctly(self, burger, index, new_index,
                                                       expected_first, expected_second, expected_third):
         """Тест: метод move_ingredient должен правильно перемещать ингредиенты."""
-        # Создаем уникальные моки с именами
         ing1 = Mock()
         ing1.get_name.return_value = "ing1"
         ing2 = Mock()
@@ -67,22 +81,20 @@ class TestBurger:
 
         burger.move_ingredient(index, new_index)
 
-        # Проверяем порядок по именам
         result_names = [ing.get_name() for ing in burger.ingredients]
         assert result_names == [expected_first, expected_second, expected_third]
 
     @pytest.mark.parametrize("bun_price, ingredient1_price, ingredient2_price, expected_price", [
-        (100.0, 50.0, 150.0, 400.0),   # 2*100 + 50 + 150 = 400
-        (80.0, 30.0, 40.0, 230.0),     # 2*80 + 30 + 40 = 230
-        (120.0, 0.0, 0.0, 240.0),      # 2*120 + 0 + 0 = 240
+        (100.0, 50.0, 150.0, 400.0),
+        (80.0, 30.0, 40.0, 230.0),
+        (120.0, 0.0, 0.0, 240.0),
     ])
-    def test_get_price_calculates_correctly(self, burger, mock_bun, bun_price, 
+    def test_get_price_calculates_correctly(self, burger, mock_bun, bun_price,
                                             ingredient1_price, ingredient2_price, expected_price):
         """Тест: метод get_price должен правильно рассчитывать стоимость."""
         mock_bun.get_price.return_value = bun_price
         burger.set_buns(mock_bun)
 
-        # Создаем ингредиенты с нужными ценами
         ing1 = Mock()
         ing1.get_price.return_value = ingredient1_price
         ing2 = Mock()
@@ -106,13 +118,11 @@ class TestBurger:
     def test_get_receipt_with_single_ingredient(self, burger, bun_name, ingredient_name,
                                                 ingredient_type, ingredient_price, expected_receipt):
         """Тест: метод get_receipt должен формировать правильный чек с одним ингредиентом."""
-        # Создаем мок булочки
         mock_bun = Mock()
         mock_bun.get_name.return_value = bun_name
         mock_bun.get_price.return_value = 100.0
         burger.set_buns(mock_bun)
 
-        # Создаем мок ингредиента
         mock_ing = Mock()
         mock_ing.get_name.return_value = ingredient_name
         mock_ing.get_price.return_value = ingredient_price
@@ -157,7 +167,6 @@ class TestBurger:
         mock_bun.get_price.return_value = bun_price
         burger.set_buns(mock_bun)
 
-        # Добавляем ингредиенты с параметризацией
         ingredient_prices = [30.0, 40.0, 50.0]
         expected_price = bun_price * 2
 
