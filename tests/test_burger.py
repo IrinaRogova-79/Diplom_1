@@ -43,22 +43,24 @@ class TestBurger:
 
         assert len(burger.ingredients) == expected_length
 
-    @pytest.mark.parametrize("index, should_contain_original", [
-        (0, False),  # удаляем первый элемент, оригинальный мок удаляется
-        (1, True),   # удаляем второй, оригинальный мок остаётся
-        (2, True),   # удаляем третий, оригинальный мок остаётся
-    ])
-    def test_remove_ingredient_keeps_or_removes_correct_element(self, burger, mock_ingredient, index, should_contain_original):
-        """Тест: метод remove_ingredient должен удалять правильный элемент."""
+    @pytest.mark.parametrize("index", [1, 2])
+    def test_remove_ingredient_keeps_other_elements(self, burger, mock_ingredient, index):
+        """Тест: при удалении второго или третьего элемента, оригинальный мок остаётся."""
         ingredients = [mock_ingredient, Mock(), Mock()]
         burger.ingredients = ingredients.copy()
 
         burger.remove_ingredient(index)
 
-        if should_contain_original:
-            assert mock_ingredient in burger.ingredients
-        else:
-            assert mock_ingredient not in burger.ingredients
+        assert mock_ingredient in burger.ingredients
+
+    def test_remove_ingredient_removes_first_element(self, burger, mock_ingredient):
+        """Тест: при удалении первого элемента, оригинальный мок удаляется."""
+        ingredients = [mock_ingredient, Mock(), Mock()]
+        burger.ingredients = ingredients.copy()
+
+        burger.remove_ingredient(0)
+
+        assert mock_ingredient not in burger.ingredients
 
     @pytest.mark.parametrize("index, new_index, expected_first, expected_second, expected_third", [
         (0, 2, "ing2", "ing3", "ing1"),
